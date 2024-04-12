@@ -1,8 +1,50 @@
-import { Check, PlusCircle, Trash } from '@phosphor-icons/react'
-import clsx from 'clsx'
+import { PlusCircle } from '@phosphor-icons/react'
+import { ChangeEvent, FormEvent, useRef, useState } from 'react'
+import { Task } from './components/ui/task'
+
+export interface TaskProps {
+  name: string
+  isDone: boolean
+  id: number
+}
 
 export function App() {
-  const isCheck = true
+  const [tasks, setTasks] = useState<Array<TaskProps>>([])
+  const [newTask, setNewTask] = useState('')
+
+  const tasksCount = tasks.length
+  const completedTaskCount = tasks.filter((task) => task.isDone === true).length
+  const currentId = useRef(0)
+
+  const handleNewTaskChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setNewTask(e.target.value)
+  }
+
+  const handleNewTaskSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setTasks([
+      ...tasks,
+      { name: newTask, isDone: false, id: currentId.current++ },
+    ])
+    setNewTask('')
+  }
+
+  const handleToggleCompleteTask = (id: number) => {
+    const task = tasks.find((task) => task.id === id)
+    if (task) {
+      const updatedTasks = tasks.map((task) => {
+        if (task.id === id) return { ...task, isDone: !task?.isDone }
+        return task
+      })
+      setTasks(updatedTasks)
+    }
+  }
+
+  const handleDeleteTask = (id: number) => {
+    const tasksWithOutDeletedOne = tasks.filter((task) => task.id !== id)
+    setTasks(tasksWithOutDeletedOne)
+  }
+
   return (
     <div className="grid grid-rows-[auto_30px_1fr]">
       <header className="col-span-full row-start-1 row-end-3 flex justify-center bg-gray-700 py-16">
@@ -15,11 +57,16 @@ export function App() {
         </div>
       </header>
       <main className="col-span-full row-start-2 row-end-4 flex w-full flex-col items-center gap-16">
-        <form className="flex w-full max-w-[736px] gap-2" action="">
+        <form
+          className="flex w-full max-w-[736px] gap-2"
+          onSubmit={handleNewTaskSubmit}
+        >
           <input
             className="w-full rounded-lg bg-gray-500 p-4 text-base text-gray-100 outline outline-[1px] outline-gray-700 placeholder:text-gray-300 focus:outline-purple-dark"
             placeholder="Adicione uma nova tarefa"
             type="text"
+            value={newTask}
+            onChange={handleNewTaskChange}
           />
           <button
             className="tex-sm flex items-center gap-2 rounded-lg bg-blue-dark p-4 font-bold leading-3 text-gray-100 hover:bg-blue-default"
@@ -33,44 +80,31 @@ export function App() {
           <div className="flex justify-between">
             <span
               className="flex items-center gap-2 text-sm font-bold text-blue-default after:rounded-full after:bg-gray-400 after:px-2 after:py-0.5 after:text-xs after:font-bold after:leading-3 after:text-gray-200 after:content-[attr(data-count)]"
-              data-count={0}
+              data-count={tasksCount}
             >
               Tarefas criadas
             </span>
             <span
               className="flex items-center gap-2 text-sm font-bold text-purple-default after:rounded-full after:bg-gray-400 after:px-2 after:py-0.5 after:text-xs after:font-bold after:leading-3 after:text-gray-200 after:content-[attr(data-check-count)'_de_'attr(data-count)]"
-              data-count={5}
-              data-check-count={2}
+              data-count={tasksCount}
+              data-check-count={completedTaskCount}
             >
               Concluídas
             </span>
           </div>
           <ul className="flex flex-col gap-3 rounded-lg">
-            <li className="flex items-start gap-3 rounded-lg border border-solid border-gray-400 bg-gray-500 p-5">
-              <label
-                className="m-1 flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-solid border-blue-default bg-gray-500 p-0.5 hover:mix-blend-plus-lighter has-[:checked]:border-purple-dark has-[:checked]:bg-purple-dark"
-                htmlFor="id"
-              >
-                <input className="peer sr-only" type="checkbox" id="id" />
-                <Check
-                  className="hidden leading-[0] text-gray-100 peer-checked:block"
-                  size={12}
-                  weight="bold"
+            {tasks.map((task) => {
+              return (
+                <Task
+                  key={task.id}
+                  name={task.name}
+                  isDone={task.isDone}
+                  onToggle={() => handleToggleCompleteTask(task.id)}
+                  onDelete={() => handleDeleteTask(task.id)}
+                  id={task.id}
                 />
-              </label>
-              <p
-                className={clsx('text-gray-100', {
-                  'line-through': isCheck,
-                  'text-gray-300': isCheck,
-                })}
-              >
-                Integer urna interdum massa libero auctor neque turpis turpis
-                semper. Duis vel sed fames integer.
-              </p>
-              <button className="rounded-[4px] p-1 text-gray-300 hover:bg-gray-400 hover:text-danger">
-                <Trash size={16} />
-              </button>
-            </li>
+              )
+            })}
           </ul>
         </div>
       </main>
