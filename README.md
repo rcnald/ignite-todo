@@ -7,7 +7,6 @@ Uma aplicação com o proposito de por em pratica conceitos básicos do react no
 - **Adicionar tarefa**
 - **Marcar/desmarcar tarefa como concluída**
 - **Excluir tarefa**
-- 
 ## Pré-requisitos
 
 Antes de começar, certifique-se de ter o [Node.js](https://nodejs.org/) instalado em seu sistema.
